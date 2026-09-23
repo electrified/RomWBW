@@ -1,12 +1,12 @@
 ;------------------------------------------------------------------------------
-; SN76489 + AY-3-8910 + YM2162 + YM2151 VGM player for CP/M
+; SN76489 + AY-3-8910 + YM2162 + YM2151 + OPL2/OPL3 VGM player for CP/M
 ;------------------------------------------------------------------------------
 ;
 ; Based on VGM player by J.B. Langston
 ; https://github.com/jblang/SN76489
 ;
 ; Enhanced with multi-chip support by Marco Maccaferri
-; YM2151 support from Ed Brindley
+; YM2151 and OPL2/OPL3 (YM3812/YMF262) support from Ed Brindley
 ;
 ; YM2162/YM3484, GD3 support, VGM Chip identification, 
 ; default file type, basic file size checking, polled CTC mode
@@ -37,7 +37,7 @@ MBC		.equ	4
 RCBUSMSX	.equ	5		; Ports configured as per MSX
 ;
 plt_romwbw	.equ	1		; Build for ROMWBW?
-plt_type	.equ	sbcecb		; Select build configuration
+plt_type	.equ	RCBUS		; Select build configuration
 debug		.equ	0		; Display port, register, config info
 ;
 ;------------------------------------------------------------------------------
@@ -88,6 +88,10 @@ YM2DAT		.equ	VGMBASE+03H	; Secondary YM2162 11000011 a1=1 a0=1
 YM2SEL		.equ	VGMBASE+02H	; Secondary YM2162 11000010 a1=1 a0=0
 YMDAT		.equ	VGMBASE+01H	; Primary YM2162 11000001 a1=0 a0=1
 YMSEL		.equ	VGMBASE+00H	; Primary YM2162 11000000 a1=0 a0=0
+OPL3ADDR1	.equ	VGMBASE+0CH	; OPL3 Register 1 (Address)
+OPL3DATA1	.equ	VGMBASE+0DH	; OPL3 Register 2 (Data)
+OPL3ADDR2	.equ	VGMBASE+0EH	; OPL3 Register 3 (Address)
+OPL3DATA2	.equ	VGMBASE+0FH	; OPL3 Register 4 (Data)
 #ENDIF
 ;
 #IF (plt_type=P8X180)
@@ -110,6 +114,10 @@ YM2DAT		.equ	000H		; Secondary YM2162 11000011 a1=1 a0=1
 YM2SEL		.equ	000H		; Secondary YM2162 11000010 a1=1 a0=0
 YMDAT		.equ	000H		; Primary YM2162 11000001 a1=0 a0=1
 YMSEL		.equ	000H		; Primary YM2162 11000000 a1=0 a0=0
+OPL3ADDR1	.equ	090H		; OPL3 Register 1 (Address)
+OPL3DATA1	.equ	091H		; OPL3 Register 2 (Data)
+OPL3ADDR2	.equ	092H		; OPL3 Register 3 (Address)
+OPL3DATA2	.equ	093H		; OPL3 Register 4 (Data)
 #ENDIF
 ;
 #IF (plt_type=RCBUS)
@@ -132,6 +140,10 @@ YM2DAT		.equ	000H		; UNDEFINED	; Secondary YM2162 11000011 a1=1 a0=1
 YM2SEL		.equ	000H		; UNDEFINED	; Secondary YM2162 11000010 a1=1 a0=0
 YMDAT		.equ	000H		; UNDEFINED	; Primary YM2162 11000001 a1=0 a0=1
 YMSEL		.equ	000H		; UNDEFINED	; Primary YM2162 11000000 a1=0 a0=0
+OPL3ADDR1	.equ	090H		; OPL3 Register 1 (Address)
+OPL3DATA1	.equ	091H		; OPL3 Register 2 (Data)
+OPL3ADDR2	.equ	092H		; OPL3 Register 3 (Address)
+OPL3DATA2	.equ	093H		; OPL3 Register 4 (Data)
 #ENDIF
 ;
 #IF (plt_type=sbcecb)
@@ -156,6 +168,10 @@ YM2DAT		.equ	VGMBASE+03H			; Secondary YM2162 11000011 a1=1 a0=1
 YM2SEL		.equ	VGMBASE+02H			; Secondary YM2162 11000010 a1=1 a0=0
 YMDAT		.equ	VGMBASE+01H			; Primary YM2162 11000001 a1=0 a0=1
 YMSEL		.equ	VGMBASE+00H			; Primary YM2162 11000000 a1=0 a0=0
+OPL3ADDR1	.equ	VGMBASE+0CH		; OPL3 Register 1 (Address)
+OPL3DATA1	.equ	VGMBASE+0DH		; OPL3 Register 2 (Data)
+OPL3ADDR2	.equ	VGMBASE+0EH		; OPL3 Register 3 (Address)
+OPL3DATA2	.equ	VGMBASE+0FH		; OPL3 Register 4 (Data)
 #ENDIF
 ;
 #IF (plt_type=MBC)
@@ -178,6 +194,10 @@ YM2DAT		.equ	000H		; UNDEFINED	; Secondary YM2162 11000011 a1=1 a0=1
 YM2SEL		.equ	000H		; UNDEFINED	; Secondary YM2162 11000010 a1=1 a0=0
 YMDAT		.equ	000H		; UNDEFINED	; Primary YM2162 11000001 a1=0 a0=1
 YMSEL		.equ	000H		; UNDEFINED	; Primary YM2162 11000000 a1=0 a0=0
+OPL3ADDR1	.equ	090H		; OPL3 Register 1 (Address)
+OPL3DATA1	.equ	091H		; OPL3 Register 2 (Data)
+OPL3ADDR2	.equ	092H		; OPL3 Register 3 (Address)
+OPL3DATA2	.equ	093H		; OPL3 Register 4 (Data)
 #ENDIF
 
 #IF (plt_type=RCBUSMSX)
@@ -202,6 +222,10 @@ YM2DAT		.equ	VGMBASE+03H	; Secondary YM2162 11000011 a1=1 a0=1
 YM2SEL		.equ	VGMBASE+02H	; Secondary YM2162 11000010 a1=1 a0=0
 YMDAT		.equ	VGMBASE+01H	; Primary YM2162 11000001 a1=0 a0=1
 YMSEL		.equ	VGMBASE+00H	; Primary YM2162 11000000 a1=0 a0=0
+OPL3ADDR1	.equ	VGMBASE+0CH	; OPL3 Register 1 (Address)
+OPL3DATA1	.equ	VGMBASE+0DH	; OPL3 Register 2 (Data)
+OPL3ADDR2	.equ	VGMBASE+0EH	; OPL3 Register 3 (Address)
+OPL3DATA2	.equ	VGMBASE+0FH	; OPL3 Register 4 (Data)
 #ENDIF
 ;
 ;------------------------------------------------------------------------------
@@ -285,6 +309,9 @@ VGM_YM21511_W	.equ	054H			; YM2151 #1 WRITE VALUE DD
 VGM_YM21512_W	.equ	0A4H			; YM2151 #2 WRITE VALUE DD
 VGM_AY		.equ	0A0H			; AY-3-8910
 VGM_YM2413	.equ	051H			; YM2413, write value dd to register aa
+VGM_OPL2_W	.equ	05AH			; OPL2 write (YM3812)
+VGM_OPL3_1_W	.equ	05EH			; OPL3 port 0 write
+VGM_OPL3_2_W	.equ	05FH			; OPL3 port 1 write
 
 ;------------------------------------------------------------------------------
 ; Generic CP/M definitions
@@ -593,7 +620,7 @@ YM2151_1	CP      VGM_YM21511_W
 		JP	NEXT
 ;
 YM2151_2	CP      VGM_YM21512_W
-                JR      NZ,GG
+                JR      NZ,OPL2
 		LD	A,(HL)
 		OUT	(YM2151_SEL2),A
 		INC	HL
@@ -601,6 +628,41 @@ YM2151_2	CP      VGM_YM21512_W
 		OUT	(YM2151_DAT2),A
 		INC	HL
 		SET	7,(IX+0)
+		JP	NEXT
+;
+;	OPL2/OPL3 SECTION
+;
+OPL2:		CP	VGM_OPL2_W
+		JR	NZ, OPL3_1
+		LD	A, (HL)
+		INC	HL
+		OUT	(OPL3ADDR1), A
+		LD	A, (HL)
+		INC	HL
+		OUT	(OPL3DATA1), A
+		SET	3,(IX+1)		; FLAG OPL2/OPL3 port 0
+		JP	NEXT
+;
+OPL3_1:		CP	VGM_OPL3_1_W
+		JR	NZ, OPL3_2
+		LD	A, (HL)
+		INC	HL
+		OUT	(OPL3ADDR1), A
+		LD	A, (HL)
+		INC	HL
+		OUT	(OPL3DATA1), A
+		SET	3,(IX+1)		; FLAG OPL2/OPL3 port 0
+		JP	NEXT
+
+OPL3_2:		CP	VGM_OPL3_2_W
+		JR	NZ, GG
+		LD	A, (HL)
+		INC	HL
+		OUT	(OPL3ADDR2), A
+		LD	A, (HL)
+		INC	HL
+		OUT	(OPL3DATA2), A
+		SET	4,(IX+1)		; FLAG OPL3 port 1
 		JP	NEXT
 ;
 ;	GAME GEAR SN76489 STEREO SECTION
@@ -710,6 +772,22 @@ VGMDEVICES:	LD	DE,MSG_PO		; Played on ...
 		CALL	PRTSTR
 
 
+		LD	A,(IX+1)		; Check for OPL2/OPL3
+
+		BIT	3, A
+		JR	Z, SKIP_OPL3_1
+
+		LD	DE, MSG_OPL2
+		CALL	PRTSTR
+
+SKIP_OPL3_1:
+		BIT	4, A
+		JR	Z, SKIPX2
+
+		LD	DE, MSG_OPL3
+		CALL	PRTSTR
+
+SKIPX2:
 SKIPX:
 		LD	DE,MSG_UNK		; Unknown Device Code detected
 ;		CALL	CHKDEV
@@ -1192,7 +1270,27 @@ SKIP4		BIT	2,(IX+1)		; mute all channels on YM2413
 		ld	de,0020H
 		jr	YM2413_FILL    ; key off
 
-SKIP5:
+SKIP5:		
+		LD	A,(IX+1)		; OPL2/OPL3 devices (bits 3,4)
+		AND	%00011000
+		JP	Z,SKIP6
+
+		; clear 0x00-0xFF on OPL3 banks (addr1/data1 and addr2/data2)
+		LD	BC, 0100H
+opl3_reset_loop:
+		LD	A, C
+		OUT	(OPL3ADDR1), A
+		LD	A, 0
+		OUT	(OPL3DATA1), A
+		LD	A, C
+		OUT	(OPL3ADDR2), A
+		LD	A, 0
+		OUT	(OPL3DATA2), A
+		DEC	BC
+		LD	A, B
+		OR	C
+		JP	NZ, opl3_reset_loop
+SKIP6:
 		RET
 
 ; e = register
@@ -1278,7 +1376,7 @@ PRTIDXDEA3:
 ; Strings and constants.
 ;------------------------------------------------------------------------------
 ;
-MSG_WELC:	.DB	"VGM Player v0.4, 11-Dec-2022"
+MSG_WELC:	.DB	"VGM Player v0.5, 12-Aug-2026"
 ;		.DB	CR,LF, "J.B. Langston/Marco Maccaferri/Ed Brindley/Phil Summers",CR,LF
 		.DB	0
 MSG_BADF:	.DB	"Not a VGM file",CR,LF,0
@@ -1288,6 +1386,8 @@ MSG_SN:		.DB	"xSN76489 ",0
 MSG_AY:		.DB	"xAY-3-8910 ",0
 MSG_YM2151:	.DB	"xYM-2151 ",0
 MSG_YM2413:	.DB	"YM2413", 0
+MSG_OPL2:	.DB	"OPL2", 0
+MSG_OPL3:	.DB	"OPL3", 0
 MSG_UNK:	.DB	"xUnsupported device encountered", CR, LF, 0
 MSG_EXIT:	.DB	CR, LF, "FINISHED.",CR,LF,0
 MSG_NOFILE:     .DB	"File not found", CR, LF, 0
@@ -1323,7 +1423,9 @@ VGM_DEV		.DB	%00000000	; IX+0 Flags for devices
 					; ......xx sn76489 1 & 2
 
 		.DB	%00000000	; IX+1 Unimplemented device flags & future devices
-;
+					; ......x. YM2413 (bit 2)
+					; .....x.. OPL2/OPL3 port 0 (bit 3)
+					; ....x... OPL3 port 1 (bit 4)
 OLDSTACK        .DW     0		; original stack pointer
                 .FILL	80H		; space for stack
 STACK		.DW	0		; top of stack
